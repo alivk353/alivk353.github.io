@@ -1,93 +1,59 @@
-# # # # # # # # # # # # #
-#   K i k o - p l u s   #
-# # # # # # # # # # # # #
 
-# Basic
-name:               "NaNaZeven"
+# SEO settings
+title: "Think"
+title2: "space" # default: ""
+description: "Just another minimalist Jekyll theme for technical writing."
+keywords: "Jekyll, theme, free, download, SEO, blog, web, minimalist, thinkspace"
+url: http://heiswayi.github.io/thinkspace # site url
+baseurl: "" # apply repo name if use it under gh-pages branch
+# baseurl: null # apply null if repo name is something like username.github.io
 
-author:
-  facebook:         your-id
-  youtubeUser:      your-id
-  youtubeChannel:   your-id
-  twitter:          your-id
-  github:           your-id
-  stackoverflow:    your-id
-  quora:            your-id
-  linkedin:         your-id
-  pinterest:        your-id
-  googlePlus:       your-id
-  instagram:        your-id
-  reddit:           your-id
-  medium:           your-id
-  tumblr:           your-id
-  email:            your-id@your-email.com
+google_analytics: UA-XXXXX-XX
+repo: http://github.com/heiswayi/thinkspace
+disqus_shortname: "hnbloggithub"
+twitter_username: "HeiswayiNrird"
+comments: true
 
-copyright:
-  year:             2017
-  name:             NaNaZeven
+# Build settings
+permalink   : /:year/:title/
+markdown    : kramdown
+highlighter : rouge
 
-# Google-analytics
-google-analytics:
-  id:               ""
+source: ./
+destination: ./_site
 
-# Disqus
-disqus:
-  id:               "nana-plus"
-
-#URL
-url:                "https://nanazeven.github.io" # the base hostname & protocol for your site
-# url:                "http://localhost:4000" # use this url when you develop
-baseurl:            "/" # the subpath of your site, e.g. /blog
-
-
-# http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-timezone:           Asia/Seoul
-permalink:          /:year-:month-:day/:title/
-
-# Pagination
-paginate:           5
-paginate_path:      /page:num/
-
-# Markdown
-markdown:           kramdown
-kramdown:
-  input:            GFM
-
-# Navigation
-nav:
-  - name:           "About"
-    url:            "/about"
-  - name:           "Archive"
-    url:            "/archive"
-  - name:           "Tags"
-    url:            "/tags"
-  - name:           "Github"
-    url:            "https://github.com/AWEEKJ/Kiko-plus"
-
-# Sass
+# Sass configuration
 sass:
-  sass_dir:         _sass
-  style:            :compressed
+  sass_dir: assets/scss
+  style: compressed # expanded
 
-# Scopes
-defaults:
-  -
-    scope:
-      path:         ""
-      type:         "pages"
-    values:
-      layout:       "page"
-  -
-    scope:
-      path:         ""
-      type:         "posts"
-    values:
-      layout:       "post"
+# Author settings
+author:
+  name     : "John Doe"
+  job      : "Software Engineer"
+  bio      : "1+1=3 is always TRUE in my world, a balance between binary and reality."
+  thumb    : /images/author.jpg
+  email    : hnrird@gmail.com
+  url      : http://heiswayi.github.io
+  github   : http://github.com/heiswayi
+  twitter  : http://twitter.com/HeiswayiNrird
+  facebook : https://www.facebook.com/heiswayi.nrird
+  linkedin : http://linkedin.com/in/nrird
 
-# jekyll-seo-tag, see: http://www.rubydoc.info/gems/jekyll-seo-tag/1.2.0
-plugins:
-  - jekyll-seo-tag
+# social settings
+og_locale: "en_US"
+twitter_card: "summary_large_image"
+twitter_site: "@HeiswayiNrird"
+
+gems:
+  - bourbon
   - jekyll-paginate
-  - jekyll-admin
 
-exclude:            [vendor]
+# navbar pages
+navbar:
+  - slug : about
+    title: About
+  - slug : blog
+    title: Blog
+
+exclude: ["gulp", "node_modules", "bower", "bower_components", "config.rb", "src", "Gemfile", "Gemfile.lock", ".rvmrc", ".rbenv-version", "package.json", "gulpfile.js", "README.md", "Rakefile", "changelog.md"]
