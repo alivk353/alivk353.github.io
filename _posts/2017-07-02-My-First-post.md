@@ -1,9 +1,9 @@
 ---
 layout: post
-title: "How to Download or Use This Theme"
+title: "第一个POST"
 comments: true
-description: "How to Download or Use This Theme"
-keywords: "dummy content"
+description: "my first post"
+keywords: "only"
 ---
 
 
