@@ -30,8 +30,8 @@ sass:
 # Author settings
 author:
   name     : "Nanaseven"
-  job      : "Software Engineer"
-  bio      : "一个半吊子"
+  job      : "NULL"
+  bio      : "现在你认为没有价值而舍弃的东西，也会出现在你今后即将迎来的人生里哦。你将会成为你曾经看不起的那种人，你不觉得这很痛苦吗？"
   thumb    : /images/author.jpg
   email    : qiyakun353@gmail.com
   url      : https://nanazeven.github.io
