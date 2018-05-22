@@ -1,7 +1,7 @@
 
 # SEO settings
 title: "0x07"
-title2: "#nana" # default: ""
+title2: "" # default: ""
 description: ""
 keywords: "github pages"
 url: http://nanazeven.github.io # site url
@@ -12,7 +12,7 @@ google_analytics: UA-XXXXX-XX
 repo: https://github.com/nanazeven/nanazeven.github.io
 disqus_shortname: "***"
 twitter_username: "***"
-comments: true
+comments: false
 
 # Build settings
 permalink   : /:year/:title/
@@ -30,8 +30,8 @@ sass:
 # Author settings
 author:
   name     : "0x07"
-  job      : "NULL"
-  bio      : "现在你认为没有价值而舍弃的东西，也会出现在你今后即将迎来的人生里哦。你将会成为你曾经看不起的那种人，你不觉得这很痛苦吗？"
+  job      : " "
+  bio      : "你将会成为你曾经看不起的那种人，你不觉得这很痛苦吗？"
   thumb    : /images/author.jpg
   email    : qiyakun353@gmail.com
   url      : https://nanazeven.github.io
