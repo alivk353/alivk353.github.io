@@ -127,17 +127,18 @@ Answer: The javascript will NOT execute.
 
 > 括号中的内容没有被当作字符串进行解码 ，没有处于‘’内。
 
-<div class="divider"></div>
+***
 
 ```
     <script>alert('13\u0027)</script>
     Unicode escape sequence encoded '
 ```
+
 Answer: The javascript will NOT execute.
 
 > \u0027不会被解码成控股之字符，导致单引号没有闭合。
 
-<div class="divider"></div>
+***
 
 ```
 <script>alert('14\u000a')</script>
@@ -147,7 +148,7 @@ Answer: The javascript will execute.
 
  > \u000a是换行符，例中Unicode编码处于字符串中,在JS中Unicode转义将永远不会破环字符串上下文，所以它们只能被解释成字符串常量。
 
-<div class="divider"></div>
+
 
 ## Bonus
 ```
