@@ -13,7 +13,7 @@ URL encoded "javascript:alert(1)"
 Answer: The javascript will NOT execute.
 > 解析URL编码时，解析器会判断该URl的资源类型，经过编码的协议类型不会被URl解析器解析。后面的冒号:同理。
 
-<div class="divider"></div>
+***
 
 ```
 <a href="&#x6a;&#x61;&#x76;&#x61;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;:%61%6c%65%72%74%28%32%29">
@@ -26,45 +26,51 @@ Answer: The javascript will execute.
 <div class="divider"></div>
 
 ```
-    <a href="javascript%3aalert(3)"></a>
-    URL encoded ":"
+<a href="javascript%3aalert(3)"></a>
+URL encoded ":"
 ```
 
 Answer: The javascript will NOT execute.
 > 不可以对协议资源类型及冒号进行编码，url解析器会认为他是无类型地址。
 
 <div class="divider"></div>
+
 ```
-    <div>&#60;img src=x onerror=alert(4)&#62;</div>
-    Character entity encoded < and >
+<div>&#60;img src=x onerror=alert(4)&#62;</div>
+Character entity encoded < and >
 ```
 Answer: The javascript will NOT execute.
+
 > HTML解析器在解析&#60;div&#62;后处于“数据状态”，此状态下可以解析实体字符引用，这种情况& #60;会被解析成“<”但是不会当作一个标签的开始，也就不会建立新标签。因此，我们能够利用字符实体编码这个行为来转义用户输入的数据从而确保用户输入的数据只能被解析成“数据”。
 
 <div class="divider"></div>
 
 ```
-    <textarea>&#60;script&#62;alert(5)&#60;/script&#62;</textarea>
-    Character entity encoded < and >
+<textarea>&#60;script&#62;alert(5)&#60;/script&#62;</textarea>
+Character entity encoded < and >
 ```
 
 Answer: The javascript will NOT execute AND the character entities will NOT
 be decoded either
+
 > 在标签textarea和title中，实体编码会被解析，但是不会被执行。
 
 <div class="divider"></div>
+
 ```
-    <textarea><script>alert(6)</script></textarea>
+<textarea><script>alert(6)</script></textarea>
 ```
 Answer: The javascript will NOT execute.
+
 > 标签testarea中的内容不会被当作脚本进行执行。
 
 <div class="divider"></div>
 
 ## Advanced
+
 ```
-    <button onclick="confirm('7&#39;);">Button</button>
-    Character entity encoded '
+<button onclick="confirm('7&#39;);">Button</button>
+Character entity encoded '
 ```
 Answer: The javascript will execute.
 > 标签属性值中的实体字符会被HTML解析器解析，随后经过JS解析器成功执行。
