@@ -14,14 +14,17 @@ Answer: The javascript will NOT execute.
 > 解析URL编码时，解析器会判断该URl的资源类型，经过编码的协议类型不会被URl解析器解析。后面的冒号:同理。
 
 <div class="divider"></div>
+
 ```
 <a href="&#x6a;&#x61;&#x76;&#x61;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;:%61%6c%65%72%74%28%32%29">
 Character entity encoded "javascript" and URL encoded "alert(2)"
 ```
 Answer: The javascript will execute.
+
 > 实体编码可以在不破坏DOM结构的情况下被解析，首先HTMl解析器实体引用，之后UR了解析器会对href属性值解析。
 
 <div class="divider"></div>
+
 ```
     <a href="javascript%3aalert(3)"></a>
     URL encoded ":"
