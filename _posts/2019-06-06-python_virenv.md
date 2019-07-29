@@ -126,7 +126,7 @@ vim /etc/nginx/sites-available/django_blog.conf
 
 server {
     listen 80;
-    server_name django_blog;
+    server_name localhost;
     charset utf-8;
 
     client_max_body_size 75M;
