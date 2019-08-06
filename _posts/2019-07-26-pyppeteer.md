@@ -146,6 +146,126 @@ CDP提供WebShell级别的完美API操控
 
 pyppeteer模版是对puppeteer的python封装，puppeteer是用nodejs写的，所以要在python中使用得用pyppeteer模块
 
+## Chromium 挖掘反射/DOM XSS漏洞
 
-## Chromium 检测反射/DOM XSS漏洞
+### 爬虫收集url
+
+传统的web1.0爬虫通过xpath,bs4,正则等方式来获取静态链接,在web2.0中越来越多的数据通过后台js发送请求并动态加载,许多document内的节点都可以通过JQuery vue.js等前端框架来生成,一些请求数据的接口需要我们取触发特定事件才能发现
+
+通过直接调用CDP接口或pyppeteer库向浏览器注入js代码来尽可能的获取页面上的链接信息,关键在于我们js代码注入的时间点:
+
+- 在页面加载前,可以劫持一些函数来达到记录一些绑定事件,ajax请求
+- 在页面加载后,可以注入js代码来遍历各个节点,触发各种事件来获取链接
+
+#### 页面加载前
+
+CDP提供的Page.addScriptToEvaluateOnNewDocument接口可以在加载前执行我们的js代码
+
+pyppeteer中page.evaluateOnNewDocument方法可在页面加载前注入我们的js代码
+
+此时页面的document还没有构建,所以无法操作DOM,可以劫持的对象:
+
+##### 阻塞页面加载函数,会弹出对话框的函数:
+
+- window.alert = () => {};
+- window.prompt = (msg,input) => {return input;};
+- window.confirm = () => {};
+- window.clone = () => {};
+
+##### ⻚⾯被意外跳转和关闭:
+
+```javascript
+window.open();
+window.location="/123";
+window.location="/456";
+```
+
+可以使用chromium的插件来拦截请求
+
+##### 获取ajax请求
+
+hook xhr对象
+
+```javascript
+var oldws = window.WebSocket;
+window.WebSocket = (url,arg) => {save_res(url);return new oldws(url,arg);};
+
+var oldEventSource = window.EventSource;
+window.EventSource = (url) => {save_res(url); return new oldEventSource(url);};
+
+var oldFetch = window.Fetch;
+window.Fetch = (url) => {save_res(url); return new oldFetch(url);};
+
+
+XMLHttpRequest.prototype.__originalOpen	= XMLHttpRequest.prototype.open;
+XMLHttpRequest.prototype.open = function (method,url,async,user,password){
+    save_res(url);
+    return this.__originalOpen(method, url, async, user, password);	
+};
+XMLHttpRequest.prototype.__originalSend	= XMLHttpRequest.prototype.send;
+XMLHttpRequest.prototype.send =	function(data) {
+    save_res(data);
+    return this.__originalSend(data);
+};
+```
+
+
+
+#### 页面加载后
+
+可以判断页面加载完毕的三种事件:
+
+- page.once('load',()=>{}) 触发load事件
+- networkkidle2 等待⽹络链接不超过两个的时候才继续执⾏
+- DOMContentLoaded 即document.readyState === "complete"
+
+```text
+load: when load event is fired.
+domcontentloaded: when the DOMContentLoaded event is fired.
+networkidle0: when there are no more than 0 network connections for at least 500 ms.
+networkidle2: when there are no more than 2 network connections for at least 500 ms.
+```
+
+可以在同时监控这三种时间的同时设置超时时间,一般load事件会在最后,DOMContentLoaded会不叫靠前
+
+简单通过pyppeteer的page.goto()方法来判断页面已经加载完毕:
+
+```text
+timeout (int): Maximum navigation time in milliseconds, defaults to 30 seconds, pass 0 to disable timeout. The default value can be changed by using the setDefaultNavigationTimeout() method.
+
+waitUntil (str|List[str]): When to consider navigation succeeded, defaults to load. Given a list of event strings, navigation is considered to be successful after all events have been fired. Events can be either:
+
+load: when load event is fired.
+domcontentloaded: when the DOMContentLoaded event is fired.
+networkidle0: when there are no more than 0 network connections for at least 500 ms.
+networkidle2: when there are no more than 2 network connections for at least 500 ms.
+```
+
+##### 遍历源代码中的节点信息
+
+在页面加载完毕后,遍历DOM节点.收集链接信息和事件信息,这里先不触发事件:
+
+```javascript
+var treeWalker = document.createTreeWalker(
+            document,
+            NodeFilter.SHOW_ELEMENT,
+            {acceptNode: function (node) {return NodeFilter.FILTER_ACCEPT;}},
+            //tree_walker_filter,
+            false
+        );
+
+        var links = ['src','href','action'];
+        while (treeWalker.nextNode()) {
+            var element = treeWalker.currentNode;
+            for (k = 0; k < element.attributes.length; k++) {
+                attr = element.attributes[k];
+                if (links.includes(attr.nodeName)) {
+                    save_res(attr.nodeValue);
+                }
+                //if (attr.nodeName.startsWith('on')) {
+                //    console.log(attr.nodeName, attr.nodeValue);
+                //}
+            }
+        }
+```
 
