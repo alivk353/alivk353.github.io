@@ -199,17 +199,16 @@ window.Fetch = (url) => {save_res(url); return new oldFetch(url);};
 
 XMLHttpRequest.prototype.__originalOpen	= XMLHttpRequest.prototype.open;
 XMLHttpRequest.prototype.open = function (method,url,async,user,password){
-    save_res(url);
     return this.__originalOpen(method, url, async, user, password);	
 };
 XMLHttpRequest.prototype.__originalSend	= XMLHttpRequest.prototype.send;
 XMLHttpRequest.prototype.send =	function(data) {
-    save_res(data);
+    save_res('xhr...');
     return this.__originalSend(data);
 };
 ```
 
-
+> 某些情况下,触发事件会导致xhr请求中断,导致丢失链接.
 
 #### 页面加载后
 
@@ -241,7 +240,7 @@ networkidle0: when there are no more than 0 network connections for at least 500
 networkidle2: when there are no more than 2 network connections for at least 500 ms.
 ```
 
-##### 遍历源代码中的节点信息
+##### 遍历节点
 
 在页面加载完毕后,遍历DOM节点.收集链接信息和事件信息,这里先不触发事件:
 
@@ -253,19 +252,20 @@ var treeWalker = document.createTreeWalker(
             //tree_walker_filter,
             false
         );
-
-        var links = ['src','href','action'];
-        while (treeWalker.nextNode()) {
-            var element = treeWalker.currentNode;
-            for (k = 0; k < element.attributes.length; k++) {
-                attr = element.attributes[k];
-                if (links.includes(attr.nodeName)) {
-                    save_res(attr.nodeValue);
-                }
-                //if (attr.nodeName.startsWith('on')) {
-                //    console.log(attr.nodeName, attr.nodeValue);
-                //}
-            }
-        }
 ```
 
+##### 触发事件
+
+在页面加载之前需要劫持的之间注册函数:
+
+- Element.prototype.addEventListener
+- window.addEventListener
+- HTMLElement.prototype.onclick
+- inner-event 内联事件 在遍历节点时发现
+
+在收集所有节点的静态链接之后,开始触发已经收集到的事件,这里存在两种情况,一是添加了新节点,二是发出新请求
+
+通过MutationObserver监听新节点,绑定callback函数遍历新节点,获取新的链接和新的事件
+
+
+未完...
