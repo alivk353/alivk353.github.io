@@ -1,12 +1,93 @@
 ---
 layout: post
-title: "XSS相关编码"
+title: "XSS编码相关"
 comments: false
 description: " "
 keywords: " "
 ---
-## Basics
+
+# XSS
+
+## 浏览器解析机制
+
+当浏览器从网络中获取到一段文本,触发HTML解析器进行解析,HTML解析器是一个状态机,初始状态为数据状态(`DATA State`),当解析到 `<`字符进入标签开始状态(`Tag open state`),接着解析 `a-z` 字符组成的标签名进入标签名状态(`Tag name state`),此时会发出一个 `Start tag token` ,这个token会在DOM tree中生成一个新节点,继续解析如果存在属性键值对会依次进入前属性名状态,属性值状态...指导解析到 `>` 字符进入标签关闭状态(`Tag close state`),然后回到数据状态(`Data State`), 当解析器再遇到 `<` 字符时,会先入标签开始状态(`Tag open state`),接着遇到 `/` 后发出 `end tag token` 并进入标签名状态(`Tag name state`),直到遇到 `>` 解析完这个标签,再次回到数据状态(`DATA State`)
+
+在这个阶段会对HTML实体编码进行解析,以下三种情况会对实体编码进行解解码:
+
+***
+
+### 数据状态(DATA State)
+
+```html
+<div>&#60;img src=x onerror=alert(4)&#62;</div>
 ```
+在解析`<div>`标签后,回到数据状态(`DATA State`),遇到 `&#60;` 会做实体字符解码 `<`,但不会进入标签开始状态(`Tag open state`),也就不会在DOM树中生成`<img>`节点,而是生成`#Text`节点,所以上述js代码不会被执行
+
+### 属性值状态(attribute value state)
+
+```html
+<a href="&#x6a;&#x61;&#x76;&#x61;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;:%61%6c%65%72%74%28%32%29">a标签</a>
+```
+
+在进入标签开始状态(`Tag open state`)后,接着解析属性键值对,将属性值内的实体编码解析,所以对`href`中的代码执行没有影响
+
+### RCDATA状态
+
+解析到`<textarea>`和`<title>`进入RCDATA状态
+
+```html
+<textarea>&#60;script&#62;alert(5)&#60;/script&#62;</textarea>
+```
+
+在RCDATA状态中,实体字符编码会被解码,但是不会进入标签开始状态(`Tag open state`),也就不会被解析成新节点,所以上述文本中的js代码不会被执行
+
+***
+
+在对HTML文本解析完毕,即词法解析完成,DOM树也就建立完成,Javascript解析器会对内联脚本进行解析,js解析的同时,如果遇到URL的上下文会由URl解析器来处理
+
+### URL解析
+
+首先，URL资源类型必须是ASCII字母 `http:`, `javascript:` 不可以被编码,包括冒号
+
+```html
+<a href="%6a%61%76%61%73%63%72%69%70%74:%61%6c%65%72%74%28%31%29"></a>
+```
+
+上述代码中的协议名被url编码,所以不会成功执行
+
+### Javascript解析
+
+`<script>` 和 `<style>`都属于原属文本,内部的所有HTML实体字符编码都不会被解析
+
+在js代码块中的\Uxxxx称为Unicode转义序列,在不影响js执行的情况下,可以放在三种情况下使用
+
+#### 1.字符串中
+
+单双引号,换行符不会被解释
+
+#### 2.函数名,变量名等标识符名称
+
+可以被当作标识符的一部分使用,不会影响代码执行
+
+#### 3.控制字符
+
+在代码执行过程中用到的单双引号,小括号都属于控制字符,对这些字符做js编码会影响到代码执行
+
+### 外部元素
+
+MathML命名空间或者SVG命名空间的元素,他们都遵循的是XML标准:
+
+- `在XML中实体会自动转义,除了<![CDATA[和]]>包含的实体`
+
+SVG遵循XML标准的同时也定义`script`标签,所以下面的payload可以执行:
+
+```html
+<svg><script>alert&#40;1)</script></svg>
+```
+
+## Basics 一些案例
+
+```html
 <a href="%6a%61%76%61%73%63%72%69%70%74:%61%6c%65%72%74%28%31%29"></a>
 URL encoded "javascript:alert(1)"
 ```
@@ -15,10 +96,11 @@ Answer: The javascript will NOT execute.
 
 ***
 
-```
+```html
 <a href="&#x6a;&#x61;&#x76;&#x61;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;:%61%6c%65%72%74%28%32%29">
 Character entity encoded "javascript" and URL encoded "alert(2)"
 ```
+
 Answer: The javascript will execute.
 
 > 实体编码可以在不破坏DOM结构的情况下被解析，首先HTMl解析器实体引用，之后UR了解析器会对href属性值解析。
@@ -45,7 +127,7 @@ Answer: The javascript will NOT execute.
 
 ***
 
-```
+```html
 <textarea>&#60;script&#62;alert(5)&#60;/script&#62;</textarea>
 Character entity encoded < and >
 ```
