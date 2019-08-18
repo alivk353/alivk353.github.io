@@ -85,6 +85,34 @@ SVG遵循XML标准的同时也定义`script`标签,所以下面的payload可以�
 <svg><script>alert&#40;1)</script></svg>
 ```
 
+## 关于CSP策略
+
+一个CSP策略分为多个组,以分号为界,每一组策略包含一个策略指令和一个内容源列表:
+
+```html
+Content-Security-Policy: default-src 'self' www.baidu.com; script-src 'unsafe-inline'
+```
+
+- 常用的策略指令:
+    - script-src定义了页面中Javascript的有效来源
+    - style-src定义了页面中CSS样式的有效来源
+    - img-src定义了页面中图片和图标的有效来源
+    - font-src font-src定义了字体加载的有效来源
+    - connect-src定义了请求、XMLHttpRequest、WebSocket 和 EventSource 的连接来源。
+    - child-src 指定定义了 web workers 以及嵌套的浏览上下文（如`<frame`>和`<iframe>`）的源。
+- 内容源:
+    - 源列表 一个字符串,可以使用通配符前缀来匹配地址和端口
+    - 关键字
+        - 'none' 空集,不匹配任何url
+        - 'self' 和文档同源,有着相同的 URL 协议和端口号
+        - 'unsafe-inline' 允许使用内联资源,如内联的`<script>`元素、javascript: URL、内联的事件处理函数和内联的`<style>`元素
+        - 'unsafe-eval' 允许使用 eval() 等通过字符串创建代码的方法
+    - 数据
+      - data: 支持 data://协议
+      - mediastream:
+
+### CSP策略的绕过
+
 ## Basics 一些案例
 
 ```html
