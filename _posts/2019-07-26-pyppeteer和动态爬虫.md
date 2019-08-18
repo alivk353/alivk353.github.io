@@ -1,4 +1,4 @@
-# kong
+# pyppeteer实现动态爬虫
 
 ## BOM对象和DOM对象
 
