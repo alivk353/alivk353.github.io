@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "XSS编码相关"
+title: "XSS 备忘"
 comments: false
 description: " "
 keywords: " "
@@ -115,9 +115,16 @@ Content-Security-Policy: default-src 'self' www.baidu.com; script-src 'unsafe-in
 
 ### CSP策略的绕过
 
+
 ```php
 header("Content-Security-Policy: default-src 'self'; script-src 'self' ");
 ```
+
+## X-XSS-Protection
+
+X-XSS-Protection字段用于开启浏览器XSS防护机制，ie是XSS filter，Chrome是XSS auditor,响应头无此字段默认为1,且此字段存在一定安全隐患
+
+常规设置为 X-XSS-Protectin:1,mode-block
 
 限制引用当前域脚本,可以找到上传图片的地方,上传一个内容为js代码的图片
 
