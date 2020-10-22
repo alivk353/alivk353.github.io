@@ -1,8 +1,8 @@
 
 # SEO settings
 title: "0x07"
-title2: "nana" # default: ""
-description: ""
+title2: "" # default: ""
+description: "nana"
 keywords: "github pages"
 url: http://nanazeven.github.io # site url
 baseurl: " " # apply repo name if use it under gh-pages branch
@@ -31,7 +31,7 @@ sass:
 author:
   name     : "0x07"
   job      : " "
-  bio      : "你将会成为你曾经看不起的那种人，你不觉得这很痛苦吗？"
+  bio      : "你将会成为你曾经看不起的那种人，这很痛苦"
   thumb    : /images/author.jpg
   email    : qiyakun353@gmail.com
   url      : https://nanazeven.github.io
