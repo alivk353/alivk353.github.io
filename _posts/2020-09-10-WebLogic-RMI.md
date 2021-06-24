@@ -17,9 +17,13 @@ WebLogic版本众多，经常见到的只有两个类别：10.x和12.x，这两�
 
 在上面的众多反序列化中，不同的jdk版本他的利用链也不一样，在不同的weblogic版本中引用的依赖jar包版本也不尽相同，就很讨厌
 
-##  Weblogic T3 反序列化
+##  Weblogic RMI
 
+与java RMI的通信协议JRMP不同的是,WebLogic RMI使用的是T3协议
 
+weblogic rmi完全兼容Java rmi的对象,也可以动态加载class,同时优化了套接字的使用
+
+RMI客户端可以使用多种的URL协议:rmi://, http:// ,iiop://. 而且这些协议使用的端口可以是同一个,weblogic会判断协议类型然后路由到正确的位置解析
 
 ## XMLDecoder 反序列化
 
