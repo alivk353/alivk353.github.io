@@ -199,6 +199,83 @@ Access-Control-Allow-Headers: X-Custom-Header
 ```
 如果服务器不允许此请求则不会附带上述字段
 
+# CORS in JAVA
+
+因为设置`Access-Control-Allow-Origin:*`的同时`Access-Control-Allow-Credentials`的值不能为true,否则浏览器会报错
+
+```
+已拦截跨源请求：同源策略禁止读取位于 ‘http://localhost:9000/cors/index’ 的远程资源。（原因：凭据不支持，如果 CORS 头 ‘Access-Control-Allow-Origin’ 为 ‘*’）。
+```
+
+所以当`Access-Control-Allow-Origin:*`的同时`Access-Control-Allow-Credentials:false`这样任何网站都可以获取该服务端的任何数据
+
+在spring中存在多种配置cors请求的方式:
+
+### spring security
+
+全局配置只允许特定源的跨域请求:
+
+```java
+@Configuration
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+//        http.csrf().disable();
+        http.cors();
+        http.headers().disable();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("localtest.com"));
+        configuration.setAllowedMethods(Arrays.asList("GET","POST"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/cors/**", configuration);
+        return source;
+    }
+}
+```
+
+### 在方法内单独配置
+
+如下的配置的网站的Access-Control-Allow-Origin的设置并不是固定的,而是根据用户跨域请求header的Origin动态设置的 
+
+这时,不管Access-Control-Allow-Credentials设置true还是false
+
+任何网站都可以发起请求,并读取对这些请求的响应:
+
+```java
+    @GetMapping("/origin")
+    public String getUserInfo(HttpServletRequest request, HttpServletResponse response) {
+        String origin = request.getHeader("origin");
+        response.setHeader("Access-Control-Allow-Origin", origin); // set origin from header
+        response.setHeader("Access-Control-Allow-Credentials", "true");  // allow cookie
+        return userinfo;
+    }
+```
+
+
+### spring的@CrossOrigin注解
+
+针对当一方法的配置:
+
+在DefaultCorsProcessor.class类中有spring对OPTION预检请求的支持
+
+也可以重重写在DefaultCorsProcessor类的checkOrigin来获取更自定义的配置
+
+```java
+    @CrossOrigin(origins = {"http://localtest.com"})
+    @GetMapping("/corsOrigin")
+    public String corsOrigin(){
+        return info;
+    }
+```
+###  WebMvcConfigurer
+
+Spring也支持全局来配置cors:
 
 
 
@@ -238,9 +315,19 @@ JavaScript在哪些情况下，能或不能读取`document.cookie`：
 - `cookie_path=/admin/`的情况下，`http://example.com/`不能读取`http://example.com/admin/`的Cookie
 - `cookie_domain=.example.com`的情况下，`http://a.example.com`可以读取`http://b.example.com`的Cookie
 
+### cookie的sameSite属性 
 
+cookie的SameSite属性用来限制第三方Cookie，从而减少安全风险(防止CSRF)
 
-## CSRF和同源策略
+SameSite可以有下面三种值：
+
+- Strict 仅允许一方请求携带Cookie，即浏览器将只发送相同站点请求的Cookie，即当前网页URL与请求目标URL完全一致。
+- Lax 允许部分第三方请求携带Cookie
+- None 无论是否跨站都会发送Cookie
+
+在chrome 80版本之后，谷歌把cookie的SameSite属性，从None改成了Lax
+
+# CSRF
 
 - 同源策略（Same-origin policy，简称 SOP）
 - 跨站请求伪造（Cross-site request forgery，简称 CSRF）
@@ -282,7 +369,7 @@ iframe的跨域方法:
 
 > 那么SOP的终极目的就是不让你用js对跨域request的response进行操作
 
-#### CSRF的防范方法
+### CSRF的防范方法
 
 SOP的一些策略对csrf还是起到了一些限制:
 
@@ -293,3 +380,38 @@ sop策略下发起跨域请求虽然会自动带上cookie 但是却无法使用j
 可以将csrfToken存放在cookie中,在调用接口时js将其从cookie中读取,放到query,body,header中,在后端验证参数或者字段,如果正确那一定是本域发来的请求
 
 当然也可以在后端渲染dom是将token写入页面
+
+
+#### sameSite 
+
+cookie的SameSite属性用来限制第三方Cookie，从而减少安全风险(防止CSRF)
+
+SameSite可以有下面三种值：
+
+- Strict 仅允许一方请求携带Cookie，即浏览器将只发送相同站点请求的Cookie，即当前网页URL与请求目标URL完全一致。
+- Lax 允许部分第三方请求携带Cookie
+- None 无论是否跨站都会发送Cookie
+
+在chrome 80版本之后，谷歌把cookie的SameSite属性，从None改成了Lax
+
+## 跨站的解释
+
+- `http://a.demo.com`和`http://b.demo.com`属于同站
+- `http://a.demo.com`和`http://a.demo2.com`属于跨站
+
+> 注意和跨域做比较: `http://a.demo.com`和`http://b.demo.com`属于跨域
+
+## CSRF in JAVA
+
+搭建目前常见springboot的测试环境 spring security提供两种方法防范csrf:
+
+- csrfRoken
+- 在cookie中设置sameSite属性 `Set-Cookie: JSESSIONID=randomid; Domain=bank.example.com; Secure; HttpOnly; SameSite=Lax`
+
+以下使用spring-security的csrf模块配合thymeleaf模板进行csrf校验:
+
+
+
+
+
+
