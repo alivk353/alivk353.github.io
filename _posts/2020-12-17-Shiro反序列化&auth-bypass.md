@@ -1,6 +1,6 @@
-# Shiro 反序列化漏洞
+# Shiro的反序列化漏洞和auth bypass
 
-## 描述
+## shiro反序列化 < 1.2.4
 
 使用shiro是为了让用户在服务器重启后不丢失session,登录成功后shiro会将登录信息`序列化`后加密存在在cookie的rememberme字段中返回给浏览器
 
@@ -20,22 +20,15 @@ public abstract class AbstractRememberMeManager implements RememberMeManager {
     .......
 ```
 
-## 环境搭建
+### 环境搭建
 
-### maven添加依赖
+#### maven添加依赖
 
 pom.xml文件:shiro-core和shiro-web自身需要导入,顺带导入commons-collections3.1测试其他gadget
 
 
-
 ```xml
 <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.11</version>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-core</artifactId>
@@ -46,47 +39,16 @@ pom.xml文件:shiro-core和shiro-web自身需要导入,顺带导入commons-colle
       <artifactId>shiro-web</artifactId>
       <version>1.2.4</version>
     </dependency>
-
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>3.1.0</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>javax.servlet.jsp</groupId>
-      <artifactId>jsp-api</artifactId>
-      <version>2.2</version>
-      <scope>provided</scope>
-    </dependency>
-
     <!-- https://mvnrepository.com/artifact/commons-collections/commons-collections -->
     <dependency>
       <groupId>commons-collections</groupId>
       <artifactId>commons-collections</artifactId>
       <version>3.2.1</version>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/commons-logging/commons-logging -->
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <version>1.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>1.7.30</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>1.7.30</version>
-    </dependency>
   </dependencies>
 ```
 
-### 配置web.xml
+#### 配置web.xml
 
 
 需要在web.xml中配置shiro的监听器和过滤器:
@@ -114,7 +76,7 @@ pom.xml文件:shiro-core和shiro-web自身需要导入,顺带导入commons-colle
 </web-app>
 ```
 
-### 配置shiro.ini
+#### 配置shiro.ini
 
 配置用户及权限:
 
@@ -142,7 +104,7 @@ admin = *
 
 ```
 
-### login.jsp&index.jsp
+#### login.jsp&index.jsp
 
 最简单的登录页面login.jsp:
 
@@ -173,7 +135,7 @@ admin = *
 
 > 需要在项目内任意java文件内import一个Commons-collections321包,才能在运行时gadget能找到类.
 
-### jetty启动
+#### jetty启动
 
 在pom.xml的build标签内配置插件:
 
@@ -230,21 +192,17 @@ Server: Jetty(9.4.35.v20201120)
 
 
 
-## Gadget
+### Gadget
 
-### 首先CommonsCollections6
+#### 首先CommonsCollections6
 
 这个利用链主体上是依靠`chainedtransformer`作为最终命令执行的关键
 
 而触发使用的是lazyMap.get()->TiedMapEntry.getValue()->hashMap.readObject()
 
 
+## Shiro Padding Oracle Attack 反序列化 < 1.4.1
 
+为了保证分组加密时每一组都能保证等长，在加密时需要对最后一组不等长的情况进行填充，缺n位就填n个0x0n
 
-
-
-
-
-
-
-
+解密过程：当我们提交一个IV时，服务器会用中间值与它异或得值然后先校验填充情况而非直接比对明文。
