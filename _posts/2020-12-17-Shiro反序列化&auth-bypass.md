@@ -203,6 +203,195 @@ Server: Jetty(9.4.35.v20201120)
 
 ## Shiro Padding Oracle Attack 反序列化 < 1.4.1
 
-为了保证分组加密时每一组都能保证等长，在加密时需要对最后一组不等长的情况进行填充，缺n位就填n个0x0n
+> shiro AES加密用的IV附在整段密文的前16字节
 
-解密过程：当我们提交一个IV时，服务器会用中间值与它异或得值然后先校验填充情况而非直接比对明文。
+### AES CBC模式填充预言攻击(Padding Oracle Attack)
+
+获取密文对应的明文 以及构造任意明文的密文 shiro满足漏洞的利用条件:
+
+- 有完整密文
+- 能向服务器发送修改后的密文触发解密
+- 服务器响应能够判断解密是否成功,失败的原因时padding异常
+
+###  PKCS#7 填充规则
+
+一般CBC模式分组大小为16字节 128bit 所以不足16byte的部分需要填充 padding
+
+PKCS5/7的填充规则:缺少n个byte, 则填充n个值为n的字节
+
+### AES CBC 加密模式逻辑
+
+- AES加密(明文块1 异或 IV) = 密文块1
+- AES加密(明文块2 异或 密文块1) = 密文块2
+- AES加密(明文块3 异或 密文块2) = 密文块3
+
+- AES加密(明文块i 异或 密文块i-1) = 密文块i
+
+> 由明文块1和IV向量决定后续的密文
+
+
+### AES CBC模式 解密
+
+- 明文块1 = AES解密(密文块1) 异或 IV
+- 明文块2 = AES解密(密文块2) 异或 密文块1
+- 明文块3 = AES解密(密文块3) 异或 密文块2
+
+- 明文块i = AES解密(密文块i) 异或 密文块i-1
+
+
+0000 0000 0000 0000 -> 1234 1234 1234 1234
+
+> 异或可逆: 如果A XOR B = C, 那么A XOR C = B, 同样B XOR C = A
+
+> 密文块i-1可控, 确定的明文块i, 可以构造出`AES解密(密文块i)`的值
+
+
+### 利用padding是否合法 
+
+整个流程看作盲注过程, 真假的依据时server对padding校验是否抛异常
+
+正常padding 1个0x01 2个0x02 3个0x03 ... 
+
+有连续的密文c0,c1,c2 且c0为原IV向量, 明文p 解密函数D() 密文块16字节
+
+p2 = D(c2) xor c1 分组加密字节一一对应
+
+p2[15] = D(c2)[15] xor c1[15]
+
+#### 爆破最后一个字节 padding 1个0x01
+
+将c2[0]-c2[14]设置乱码 此时正确的padding p2[15] = 0x01
+
+通过遍历c1[15] 8bit 256种可能值 向server发送 c0 + `c1[0]...c[14] c[15]` + c2 
+
+响应无异常时padding正确, 确定p2[15] = 0x01 = D(c2)[15] xor c1[15]
+
+爆破出 即中间值D(c2)[15] = 0x01 xor c1[15]
+
+> 记录`D(c2)[15]` `p2[15]`值确定
+
+#### 爆破倒数第二个字节 padding 2个0x02
+
+xxxx xxxx xxxx xx22
+
+将c2[0]-c2[13]设置乱码 
+
+c2[15]的值设置为 `D(c2)[15]` 异或 `0x02` 
+
+便利c1[14] 发送到server观察响应 没有异常padding校验通过
+
+p2[14] = 0x02 = D(c2)[14] xor c1[14]
+
+爆破出 D(c2)[14] = 0x02 xor c1[14]
+
+> 记录`D(c2)[14]` `p2[14]` 确定
+
+
+#### 构造任意明文
+
+在原有密文的后方追加伪造密文 来构造任意明文
+
+shiro构造用户请求凭证时 从cookie字段RememberMe读取Base64编码的加密数据
+
+解密后反序列化校验凭证有效期
+
+在利用padding oracle攻击时 保证padding正确的同时还要确保java反序列化流程顺利
+
+在java序列化数据尾部追加任意数据不会报错 
+
+AES解密时从第一分组开始 (第0分组默认时IV) 解密时先解密当前分组密文 再与上一段密文异或 得到明文
+
+由于受到前一个分组的影响 所以构造明文时从最后一个分组开始生成
+
+最后一个分组C 任意赋值全0 利用padding oracle求分组c的中间值=AES解密(key,C)
+
+通过遍历前一个分组c_prev 求分组c的中间值
+
+每位发送的cookie值: base64(原RememberMe + c_prev + c)
+
+最后将分组c的中间值与分组c对应明文分组p异或 即固定前一个分组的密文
+
+将固定的密文作为下一轮求中间值的C 
+
+
+## shiro
+
+### org.apache.shiro.web.filter.mgt.DefaultFilter
+
+shiro预置的filter
+
+```java
+    anon(AnonymousFilter.class),
+    authc(FormAuthenticationFilter.class),
+    authcBasic(BasicHttpAuthenticationFilter.class),
+    logout(LogoutFilter.class),
+    noSessionCreation(NoSessionCreationFilter.class),
+    perms(PermissionsAuthorizationFilter.class),
+    port(PortFilter.class),
+    rest(HttpMethodPermissionFilter.class),
+    roles(RolesAuthorizationFilter.class),
+    ssl(SslFilter.class),
+    user(UserFilter.class); //解析RememberMe 恢复用户session
+```
+
+### org.apache.shiro.web.filter.authc.UserFilter
+
+filter子类 通过isAccessAllowed方法 判断是否执行filter逻辑
+
+```java
+protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) {
+    if (this.isLoginRequest(request, response)) {
+        return true;
+    } else {
+        Subject subject = this.getSubject(request, response);
+        return subject.getPrincipal() != null;
+    }
+}
+```
+
+如果当前路径时ini文件 spring bean配置的login路径 跳过
+
+### org.apache.shiro.mgt.SecurityManager#createSubject 
+
+给当前线程绑定subject 为null则创建
+
+```java
+//org.apache.shiro.mgt.DefaultSecurityManager#createSubject 
+//预置默认的DefaultSecurityManager
+public Subject createSubject(SubjectContext subjectContext) {
+        SubjectContext context = this.copy(subjectContext); //为每个线程复制一份context
+        context = this.ensureSecurityManager(context); // 保存SecurityManager
+        context = this.resolveSession(context); //从cookie的sessionid恢复用户凭证
+        context = this.resolvePrincipals(context);//从已经构建的context解析凭证 当前用户的登录信息
+        Subject subject = this.doCreateSubject(context);
+        this.save(subject);
+        return subject;
+    }
+```
+
+```java
+//org.apache.shiro.mgt.DefaultSecurityManager#resolvePrincipals
+//恢复用户凭证 凭证报错用户登录信息和权限校验
+protected SubjectContext resolvePrincipals(SubjectContext context) {
+        PrincipalCollection principals = context.resolvePrincipals();
+        if (isEmpty(principals)) {
+            log.trace("No identity (PrincipalCollection) found in the context.  Looking for a remembered identity.");
+            principals = this.getRememberedIdentity(context); //无法从session回复用户 走RemembereMe
+            if (!isEmpty(principals)) {
+                log.debug("Found remembered PrincipalCollection.  Adding to the context to be used for subject construction by the SubjectFactory.");
+                context.setPrincipals(principals);
+            } else {
+                log.trace("No remembered identity found.  Returning original context.");
+            }
+        }
+```
+
+### org.apache.shiro.web.mgt.CookieRememberMeManager
+
+cookie key DEFAULT_REMEMBER_ME_COOKIE_NAME = "rememberMe";
+
+getRememberedSerializedIdentity从cookie读取 RemembereMe数据
+
+### org.apache.shiro.mgt.AbstractRememberMeManager#convertBytesToPrincipals
+
+AES解密 反序列化
