@@ -23,9 +23,6 @@ DynamicProxyMapper解析 标签名=dynamic-proxy 代理会被解析为`com.thoug
 创建Converters实例`new XStream()`内call`com.thoughtworks.xstream.XStream#setupConverters`
 
 
-
-
-
 class为接口 预置对应的实现类 比如：
 
 `"interface java.util.Map" -> "class java.util.HashMap"`

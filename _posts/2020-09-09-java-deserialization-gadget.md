@@ -28,18 +28,31 @@ Java的反序列化和PHP的反序列化其实有些类似，都是将一个对�
 
 - 底层采用HashMap实现,利用哈希冲突实现唯一值.
 - `readObject()`中调用内置`map.put(unsafeObject, XXX)`,进而调用`unsafeObject.hashCode()`
-- 
+
 
 ### java.util.HashMap
 
 - `readObject()`会计算key的哈希值去重,`readObject()`->`hash(key)`->`key.hashCode()`
-- 哈希碰撞触发元素`equals()`
-- `HashMap.hashCode()`简单逻辑：
+
+- 哈希碰撞 `hash(key) == hash(anotherKey)`
+    - `Objects.hashCode("zZ") = 3872`
+    - `Objects.hashCode("yy") = 3872`
+    - 触发元素`key.equals(anotherKey)`
+
+- 特殊hash碰撞类:`org.springframework.aop.target.HotSwappableTargetSource`
+ - 重写hashCode():`{return HotSwappableTargetSource.class.hashCode();}`
+ - 有:`hash(HotSwappableTargetSource) == hash(HotSwappableTargetSource)`
+ - 触发元素`HotSwappableTargetSource.equals(HotSwappableTargetSource)`
+ - 触发equals()内部逻辑
+
+- `HashMap.hashCode()`逻辑：
     - 调用父类`AbstractMap.hasCode()`
     - 依次调用`Node.hashCode()`
     - `java.util.Objects#hashCode`分别计算Node中key，value的哈希
-    - `Objects.hashCode("zZ") = 3872`
-    - `Objects.hashCode("yy") = 3872`
+
+
+
+
 
 ### java.util.Hashtable
 
@@ -97,9 +110,6 @@ Java的反序列化和PHP的反序列化其实有些类似，都是将一个对�
 - `org.apache.commons.collections.bag.AbstractMapBag#doReadObject`->`TreeMap.put(unsafeObject,XXX)`->`comparator.compare()`
 - 通常后接`org.apache.commons.collections.comparators.TransformingComparator`触发CC执行链
 
-### org.apache.commons.collections4.bidimap.DualHashBidiMap
-
- - 
 
 ## 承
 
@@ -169,7 +179,13 @@ Java的反序列化和PHP的反序列化其实有些类似，都是将一个对�
         - `clazz.isAssignableFrom(obj.getClass())` 是子类时 返回obj
         - `clazz == String.class` 调用`obj.toString()`返回
 
-> 
+
+### org.springframework.aop.target.HotSwappableTargetSource
+
+- 重写hashCode():`{return HotSwappableTargetSource.class.hashCode();}`
+- 重写equals(): `HotSwappableTargetSource.target.equals(((HotSwappableTargetSource)other).target)`
+- 触发特殊哈希碰撞 有`HotSwappableTargetSource.equals(HotSwappableTargetSource)`
+- 触发`target.equals()`
 
 ### org.apache.xpath.objects.XString
 
@@ -362,6 +378,8 @@ Java的反序列化和PHP的反序列化其实有些类似，都是将一个对�
 
 ### com.sun.rowset.JdbcRowSetImpl
 
+当程序调用 setAutoCommit()、execute() 或 prepare() 等方法时，类内部会尝试建立数据库连接 后触发`javax.naming.InitialContext.lookup(dataSourceName)`:
+
 - JdbcRowSetImpl.execute()->JdbcRowSetImpl.prepare()->JdbcRowSetImpl.connect()->lookup()
 
 ## JDK间的区别
@@ -389,51 +407,11 @@ Java的反序列化和PHP的反序列化其实有些类似，都是将一个对�
 
 - Reflection类下fieldFilterMap增加过滤 反射操作被大大限制
 
+fieldFilterMap 是 JDK 内部的一个映射表，用于过滤掉某些不应该通过反射访问的字段
+
 ### jdk15
 
 - JS引擎被正式移出JDK
-
-
-## java中加载字节码的方法
-
-Java的字节码尊外存的载体是.class文件,可以在jvm中运行
-
-### 利用URLClassLoader远程加载class文件
-
-### 利用classLoader#defineClass加载字节码
-
-系统类中的defineClass的作用域为protect,无法在外部直接访问只能通过反射调用,所以在实际环境中难以利用.
-
-### TemplatesImpl加载字节码
-
-`com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl`这个类中定义一个名为`TransletClassLoader`的内部类
-
-这个内部类继承`ClassLoader`并重写了defineClass方法,且没有定义作用域即default作用域
-
-
-> TemplatesImpl中对加载的字节码是有一定要求的：这个字节码对应的类必须是`com.sun.org.apache.xalan.internal.xsltc.runtime.AbstractTranslet`的子类
-
-### bsh.classpath.ClassManagerImpl
-
-`bsh.classpath.ClassManagerImpl#defineClass`
-
-### 利用BCEL ClassLoader加载字节码
-
-- BCEL提供修改class的接口，类似javassist
-- JDK8u251后从JDK中移除
-- 从类似XML的XLS文件，翻译转换成class
-- 过程中涉及编译，生成class字节码
-
-> com.sun.org.apache.bcel.internal.util.ClassLoader
-> org.apache.bcel.util.ClassLoader
-
-- 存在JDK8u251之前
-- 重写`ClassLoader#loadClass()`方法
-- 有加载字节码的特殊逻辑：
-- `if (class_name.indexOf("$$BCEL$$") >= 0)` -> `clazz = this.createClass(class_name)`
-- 如果类名`class_name`以`$$BCEL$$`开头，会进入加载class字节码逻辑，数据需经过解码和解压：
-    - 在`com.sun.org.apache.bcel.internal.classfile.Utility#decode`解码：先`hex`解码再`gzip`解压
-    - `com.sun.org.apache.bcel.internal.classfile.ClassParser#parse`创建class
 
 #### 常见利用
 
