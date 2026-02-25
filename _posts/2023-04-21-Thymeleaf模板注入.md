@@ -7,7 +7,7 @@
 
 Spring会根据当前项目引用具体模板(如:`spring-boot-starter-thymeleaf`) 自动注入模板提供的`ViewResolver接口实现类`
 
-> org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfiguration注解条件bean注入:
+org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfiguration注解条件bean注入:
 
 `@ConditionalOnMissingBean(  name = {"thymeleafReactiveViewResolver"} )`
 

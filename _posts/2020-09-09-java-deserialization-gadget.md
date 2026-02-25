@@ -32,6 +32,7 @@ Java的反序列化和PHP的反序列化其实有些类似，都是将一个对�
 
 ### java.util.HashMap
 
+- `hashMap.put(k,v)`-> `hashMap.putVal(hash(k), k, v)`触发 `k.hashCode()`和`k.equals(k2)`
 - `readObject()`会计算key的哈希值去重,`readObject()`->`hash(key)`->`key.hashCode()`
 
 - 哈希碰撞 `hash(key) == hash(anotherKey)`
