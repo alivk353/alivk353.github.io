@@ -1,66 +1,13 @@
+# 网站基础信息
+title: "record space"
+description: "record"
+author: "77777"
 
-# SEO settings
-title: "7777777"
-title2: "" # default: ""
-description: "akjh"
-keywords: "github pages"
-url: http://view.github.io # site url
-baseurl: " " # apply repo name if use it under gh-pages branch
-# baseurl: null # apply null if repo name is something like username.github.io
+# 主题设置 (关键部分)
+remote_theme: pages-themes/hacker@v0.2.0
 
-google_analytics: UA-XXXXX-XX
-repo: https://view.github.io
-disqus_shortname: "***"
-twitter_username: "***"
-comments: false
-
-# Build settings
-permalink   : /:year/:title/
-markdown    : kramdown
-highlighter : rouge
-
-source: ./
-destination: ./_site
-
-# Sass configuration
-sass:
-  sass_dir: assets/scss
-  style: compressed # expanded
-
-# Author settings
-author:
-  name     : "7777"
-  job      : " "
-  bio      : " "
-  thumb    : /images/author.jpg
-  email    : meile@gmail.com
-  url      : https://view.github.io
-  github   : https://view.github.io
-  twitter  : https://view.github.io
-  facebook : https://view.github.io
-  linkedin : https://view.github.io
-
-# social settings
-og_locale: "en_US"
-twitter_card: "summary_large_image"
-twitter_site: "@HeiswayiNrird"
-
-gems:
-  - bourbon
-  - jekyll-paginate
-
-# navbar pages
-navbar:
-  - slug : about
-    title: About
-  - slug : blog
-    title: Blog
-
-exclude: ["gulp", "node_modules", "bower", "bower_components", "config.rb", "src", "Gemfile", "Gemfile.lock", ".rvmrc", ".rbenv-version", "package.json", "gulpfile.js", "README.md", "Rakefile", "changelog.md"]
-
-theme: jekyll-theme-hacker
-
-# remote_theme: pages-themes/hacker@v0.2.0
-
-# plugins:
-# - jekyll-remote-theme # add this line to the plugins list if you already have one
+# 插件开启
+plugins:
+  - jekyll-remote-theme
+  - jekyll-feed
+  - jekyll-seo-tag
