@@ -1,3 +1,11 @@
+---
+title: JDBC注入
+date: 2022-03-29 13:30:00 +0800
+categories: [record]
+tags: [all]
+---
+
+## JDBC
 
 ```java
 Class.forName(" com.mysql.cj.jdbc.Driver");

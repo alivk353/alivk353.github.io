@@ -1,3 +1,11 @@
+---
+title: Android Frida
+date: 2021-03-05 13:30:00 +0800
+categories: [record]
+tags: [all]
+---
+
+
 
 # adb
 

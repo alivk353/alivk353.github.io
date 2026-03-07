@@ -1,3 +1,10 @@
+---
+title: SOP CORS CSRF
+date: 2020-11-21 12:30:00 +0800
+categories: [record]
+tags: [all]
+---
+
 # 同源策略 SOP
 
 使加载的文档DOM不会被污染，不同源的javascript运行环境独立，不同源的JS不允许互相访问,cookie,localStorage不可以读取

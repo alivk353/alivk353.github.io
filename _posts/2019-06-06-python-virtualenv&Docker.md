@@ -1,3 +1,10 @@
+---
+title: python uWSGI
+date: 2019-06-06 10:30:00 +0800
+categories: [record]
+tags: [all]
+---
+
 # Python virtualenv
 
 1. python

@@ -1,3 +1,10 @@
+---
+title: CommonsCollections1&CommonsCollections6
+date: 2020-09-09 10:30:00 +0800
+categories: [record]
+tags: [all]
+---
+
 ## CommonsCollections1&CommonsCollections6
 
 ### TransformedMap调用链

@@ -1,4 +1,9 @@
-# 对redis未授权访问漏洞利用测试
+---
+title: redis
+date: 2017-10-08 10:30:00 +0800
+categories: [record]
+tags: [all]
+---
 
 ## 代理
 

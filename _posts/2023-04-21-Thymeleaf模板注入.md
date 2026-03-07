@@ -1,3 +1,10 @@
+---
+title: Java Spring Thymeleaf模板注入
+date: 2023-04-21 13:30:00 +0800
+categories: [record]
+tags: [all]
+---
+
 ## Thymeleaf
 
 - `${}` 变量表达式 在spring应用中解析SPEL语法

@@ -1,3 +1,9 @@
+---
+title: JDK XMLDecoder 反序列化
+date: 2019-11-10 10:30:00 +0800
+categories: [record]
+tags: [all]
+---
 
 
 #  Weblogic

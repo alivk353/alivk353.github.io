@@ -1,3 +1,10 @@
+---
+title: CommonsCollections3
+date: 2020-09-09 12:30:00 +0800
+categories: [record]
+tags: [all]
+---
+
 ## CommonsCollections3
 
 ### 利用TemplatesImpl加载字节码

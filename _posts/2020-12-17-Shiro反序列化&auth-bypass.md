@@ -1,3 +1,10 @@
+---
+title: Shiro的反序列化
+date: 2020-12-17 12:30:00 +0800
+categories: [record]
+tags: [all]
+---
+
 # Shiro的反序列化漏洞和auth bypass
 
 ## shiro反序列化 < 1.2.4

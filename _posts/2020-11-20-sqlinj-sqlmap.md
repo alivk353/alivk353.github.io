@@ -1,3 +1,10 @@
+---
+title: Sqlmap 参数
+date: 2020-11-20 12:30:00 +0800
+categories: [record]
+tags: [all]
+---
+
 ## SQLMAP
 
 

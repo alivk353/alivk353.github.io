@@ -1,3 +1,10 @@
+---
+title: Java反序列化
+date: 2020-09-09 13:30:00 +0800
+categories: [record]
+tags: [all]
+---
+
 # PHP 反序列化
 
 PHP中序列化一个对象需要调用serialize()方法，之后会调用__sleep()方法执行自定义操作后，序列化数据生成，而JAVA的wrireObject()是可以重写的。反序列化后会调用__wakeup()方法。

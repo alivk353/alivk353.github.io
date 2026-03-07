@@ -1,4 +1,9 @@
-
+---
+title: CTF Tricks Record
+date: 2023-03-16 13:30:00 +0800
+categories: [record]
+tags: [all]
+---
 
 ### GET请求中 同名parm的解析方式
 

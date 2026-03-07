@@ -1,3 +1,10 @@
+---
+title: Java webshell 攻防memo
+date: 2022-12-25 13:30:00 +0800
+categories: [record]
+tags: [all]
+---
+
 
 ## jsp通过编码绕过waf
 

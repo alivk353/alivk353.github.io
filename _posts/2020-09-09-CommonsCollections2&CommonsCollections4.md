@@ -1,3 +1,10 @@
+---
+title: CommonsCollections2&CommonsCollections4
+date: 2020-09-09 11:30:00 +0800
+categories: [record]
+tags: [all]
+---
+
 # CommonsCollections2&CommonsCollections4
 
 cc2和cc4是针对commons-collections4库的利用链,4版本是3.2.1版本的分支,apache官方对旧版进行了架构上的升级,所以4版本和3版本在maven仓库中有不同id,可以同时存在一个项目中.

@@ -1,3 +1,10 @@
+---
+title: Mysql注入
+date: 2020-10-11 12:30:00 +0800
+categories: [record]
+tags: [all]
+---
+
 # MySQL
 
 ## 编码
