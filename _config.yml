@@ -1,15 +1,15 @@
 
 # SEO settings
-title: "0x07"
+title: "7777777"
 title2: "" # default: ""
-description: "nana"
+description: "akjh"
 keywords: "github pages"
-url: http://nanazeven.github.io # site url
+url: http://view.github.io # site url
 baseurl: " " # apply repo name if use it under gh-pages branch
 # baseurl: null # apply null if repo name is something like username.github.io
 
 google_analytics: UA-XXXXX-XX
-repo: https://github.com/nanazeven/nanazeven.github.io
+repo: https://view.github.io
 disqus_shortname: "***"
 twitter_username: "***"
 comments: false
@@ -29,16 +29,16 @@ sass:
 
 # Author settings
 author:
-  name     : "0x07"
+  name     : "7777"
   job      : " "
-  bio      : "拆那!"
+  bio      : " "
   thumb    : /images/author.jpg
   email    : meile@gmail.com
-  url      : https://nanazeven.github.io
-  github   : https://nanazeven.github.io
-  twitter  : https://nanazeven.github.io
-  facebook : https://nanazeven.github.io
-  linkedin : https://nanazeven.github.io
+  url      : https://view.github.io
+  github   : https://view.github.io
+  twitter  : https://view.github.io
+  facebook : https://view.github.io
+  linkedin : https://view.github.io
 
 # social settings
 og_locale: "en_US"
@@ -58,4 +58,7 @@ navbar:
 
 exclude: ["gulp", "node_modules", "bower", "bower_components", "config.rb", "src", "Gemfile", "Gemfile.lock", ".rvmrc", ".rbenv-version", "package.json", "gulpfile.js", "README.md", "Rakefile", "changelog.md"]
 
-theme: jekyll-theme-cayman
+# theme: jekyll-theme-cayman
+remote_theme: pages-themes/hacker@v0.2.0
+plugins:
+- jekyll-remote-theme # add this line to the plugins list if you already have one
