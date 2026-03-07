@@ -2,12 +2,15 @@
 layout: default
 ---
 
-# Blog 🚀
+<ul>
+  {% for post in site.posts %}
+    <li>
+      <span style="color: #666;">{{ post.date | date: "%Y-%m-%d" }}</span> &raquo; 
+      <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+    </li>
+  {% endfor %}
+</ul>
 
-77777
-
-### 最近更新
-* [第一篇博客：如何搭建 GitHub Pages](./_posts/2026-03-07-hello-world.md)
-* [关于我](#)
-
----
+{% if site.posts.size == 0 %}
+  <p>目前还没有发布任何文章，请检查 `_posts` 文件夹。</p>
+{% endif %}
