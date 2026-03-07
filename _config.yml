@@ -28,8 +28,8 @@ url: "https://alivk353.github.io/"
 # 5. 文章路径设置
 # permalink: /posts/:title/
 
-# 尝试全局禁用侧边栏布局
-layout: page
-hide_sidebar: true
+# # 尝试全局禁用侧边栏布局
+# layout: page
+# hide_sidebar: true
 
-theme_mode: dark # [light | dark]
+# theme_mode: dark # [light | dark]
