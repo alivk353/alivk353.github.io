@@ -7,9 +7,9 @@ lang: zh-CN
 timezone: Asia/Shanghai
 
 # 主题设置 (关键部分)
-# remote_theme: pages-themes/hacker@v0.2.0
+remote_theme: pages-themes/hacker@v0.2.0
 
-remote_theme: cotes2020/jekyll-theme-chirpy@v5.6.0
+# remote_theme: cotes2020/jekyll-theme-chirpy@v5.6.0
 
 # 插件开启
 plugins:
@@ -19,9 +19,9 @@ plugins:
   - jekyll-sitemap
   - jekyll-seo-tag
 
-# 分页配置（必须开启，首页才能显示文章列表）
-paginate: 10
-paginate_path: /page:num/
+# # 分页配置（必须开启，首页才能显示文章列表）
+# paginate: 10
+# paginate_path: /page:num/
 
 url: "https://alivk353.github.io/"
 

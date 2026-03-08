@@ -79,7 +79,7 @@ create table `charset_latin1` (
 - utf8=>latin1 client为utf8,服务端为latin1编码,此时可能会导致不完整字符丢失
 
 
-<!-- ![path](https://nanazeven.github.io/image/sqlinbc.png) -->
+<!-- ![path](https://alivk353.github.io/image/sqlinbc.png) -->
 <!-- ![path](../image/sqlinbc.png) -->
 
 ## 基于约束的SQL攻击
