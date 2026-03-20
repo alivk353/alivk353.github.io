@@ -1,5 +1,5 @@
 ---
-title: Java Spring Thymeleaf模板注入
+title: Thymeleaf模板注入
 date: 2023-04-21 13:30:00 +0800
 categories: [record]
 tags: [all]
@@ -206,3 +206,6 @@ String requestURI = StringUtils.pack(UriEscape.unescapeUriPath(request.getReques
         return false;
     }
 ```
+
+## thymeleaf 沙盒原理
+

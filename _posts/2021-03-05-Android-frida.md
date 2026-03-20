@@ -6,6 +6,75 @@ tags: [all]
 ---
 
 
+# 代理检测 SSL证书绑定
+
+App不再信任系统内置证书 只信任server端HTTPS绑定的特定证书 app绑定证书的方案:
+
+证书锁定: 
+
+app包内附带完整证书文件crt或cer 比对字节一致后通过 自定义`TrustManager`或使用`OkHttp`等库进行配置
+
+公钥锁定: 
+
+Android官方推荐的`Network Security Configuration`在`res/xml/network_security_config.xml`中配置公钥Hash
+
+或使用`OkHttp`的`CertificatePinner.Builder().add()` 绑定公钥Hash 
+
+建立TLS连接时 比对server公钥hash 是否一致
+
+### 绕过Android系统级证书绑定
+
+底层最终是由`com.android.org.conscrypt.TrustManagerImpl`这个类来负责处理的
+
+它内部有一个关键方法`checkTrustedRecursive` 方法会遍历服务器返回的证书链 与在`network_security_config.xml`中配置的 `<pin-set>` 进行比对
+
+```js
+Java.perform(function() {
+    var TrustManagerImpl = Java.use('com.android.org.conscrypt.TrustManagerImpl');
+    // Hook 关键方法，直接返回一个空的 ArrayList，表示验证成功
+    TrustManagerImpl.checkTrustedRecursive.implementation = function() {
+        console.log("[+] Bypassing Network Security Config!");
+        // 返回一个空的 ArrayList 代表证书链为空，即验证通过
+        return Java.use('java.util.ArrayList').$new();
+    };
+});
+```
+
+### 绕过OkHttp
+
+核心类是`okhttp3.CertificatePinner` 调用`certificatePinner.add("hostname", "pin-sha256/...")`添加绑定
+
+`OkHttp`在握手时就会调用`CertificatePinner.check()` 方法会提取服务器证书的公钥 计算其哈希值并与你预设的哈希值进行比对
+
+```js
+Java.perform(function() {
+    // 方案1: 让 check 方法失效
+    var CertificatePinner = Java.use('okhttp3.CertificatePinner');
+    CertificatePinner.check.overload('java.lang.String', 'java.util.List').implementation = function(hostname, peerCertificates) {
+        console.log(`[+] OkHttp Pinner check bypassed for: ${hostname}`);
+        // 直接返回，不执行任何检查
+        return;
+    };
+
+    // 方案2: 更激进，阻止 pin 被添加
+    var CertificatePinnerBuilder = Java.use('okhttp3.CertificatePinner$Builder');
+    CertificatePinnerBuilder.add.overload('java.lang.String', 'java.lang.String[]').implementation = function(hostname, pins) {
+        console.log(`[+] Blocked pin addition for: ${hostname}`);
+        // 直接返回 this，表示虽然调用了 add 方法，但实际没做任何事
+        return this;
+    };
+});
+```
+
+# 基于Frida的动态Dump
+
+Android运行时库`libart.so`中负责加载DEX的核心函数 如OpenMemory、OpenCommon、DefineClass
+
+调用这些函数将解密后的DEX加载进内存时 Frida脚本就能直接从函数参数中获取DEX文件在内存中的起始地址和大小 并将其完整地Dump出来
+
+> 对抗及时擦除 Hook`dlopen`等函数 在libart.so刚加载完成或加固SO刚加载时 立即进行Hook确保在DEX被擦除前dump
+
+主动调用函数对抗函数抽取 遍历调用所有被抽空的method 被调用时 加固壳的保护逻辑会将真实的代码解密到内存中 再配合内存Dump
 
 # adb
 
@@ -94,8 +163,7 @@ Xposed 在 Android Pie 之后已停更,EdXposed 是 Xposed 的正统接任者
 var currentApplication = Java.use("android.app.ActivityThread").currentApplication();
 var context = currentApplication.getApplicationContext();
 var t = Java.use("com.cebbank.cebUtils.CebTransferParam").$new();
-```  
-
+``` 
 
 ## cli
 
@@ -214,10 +282,3 @@ $ python3 r0capture.py -U -f com.qiyi.video -v
 Attach 模式，抓包内容保存成pcap文件供后续分析：
 
 $ python3 r0capture.py -U com.qiyi.video -v -p iqiyi.pcap
-
-京口北固亭怀古
-
-千古江山 英雄无觅孙仲谋处 
-舞榭歌台 风流总被雨打风吹去
-斜阳草树 寻常巷陌 人道寄奴曾住
-想当年 金戈铁马 气吞万里如虎
