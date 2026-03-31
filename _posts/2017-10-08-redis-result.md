@@ -114,7 +114,7 @@ register(TestPOC)
 
 exp：https://github.com/Xyntax/POC-T/blob/master/script/redis-web-probe.py
 
-![path](https://alivk353.github.io/image/path.png)
+![path](https://chenxvn53.github.io/image/path.png)
 
 ### 批量识别指纹
 
@@ -132,7 +132,7 @@ save
 
 ### 成功写入webshell：
 
-![res1](https://alivk353.github.io/image/res1.png)
+![res1](https://chenxvn53.github.io/image/res1.png)
 
 ### 连接菜刀&上传端口转发脚本&查看权限
 
@@ -152,4 +152,4 @@ $ ifconfig
 
 成功写入webshell，是用菜刀上传端口转发脚本。
 www-data需要提权
-![res2](https://alivk353.github.io/image/res2.png)
+![res2](https://chenxvn53.github.io/image/res2.png)

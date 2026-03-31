@@ -1,6 +1,6 @@
 ---
 title: Spring DispatcherServlet
-date: 2020-12-27 13:30:00 +0800
+date: 2024-01-24 13:30:00 +0800
 categories: [record]
 tags: [all]
 ---
@@ -42,6 +42,31 @@ PropertyAccessor 赋值：最终通过反射调用 Setter 或直接修改 Field
 调用setter `org.springframework.beans.BeanWrapperImpl.BeanPropertyHandler#setValue`
 
 
+### 获取Spring Web的核心容器 WebApplicationContext
 
+#### 方式一 基于请求上下文 (RequestContextHolder)
+
+获取 Reuqest `RequestContextHolder.getRequestAttributes()` Spring 会利用 ThreadLocal 存储当前线程的请求属性。通过这个方法可以抓取到当前正在处理的 Request 对象
+
+获取 ServletContext: 从 Request 中拿到 Session，再从 Session 中拿到 ServletContext
+
+```java
+ServletContext servletContext = RequestContextHolder.getRequestAttributes().getRequest().getSession().getServletContext()
+
+WebApplicationContext webContent = WebApplicationContextUtils.getWebApplicationContext(servletContext)
+```
+
+WebApplicationContextUtils: 这是 Spring 提供的官方工具类。它通过 ServletContext 中存储的特定属性键（org.springframework.web.context.WebApplicationContext.ROOT）来提取出 Spring 容器。
+
+
+简写同理:
+
+```java
+WebApplicationContext context = (WebApplicationContext)RequestContextHolder.currentRequestAttributes().getAttribute("org.springframework.web.servlet.DispatcherServlet.CONTEXT", 0);
+```
+
+#### 方式二 基于 LiveBeansView
+
+LiveBeansView : Spring 用于图形化展示 Bean 关系的监控类
 
 
